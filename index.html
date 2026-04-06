@@ -1,1 +1,237 @@
-deneme
+
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ankuzef | Forum</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="https://obs.ankara.edu.tr/files/university/images/logo.png">
+</head>
+
+<body>
+    <div id="guest-bar" class="guest-bar">
+        <div class="guest-bar-text">🔒 Bu topluluğun tüm özelliklerini kullanabilmek için aramıza katıl.</div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="openAuthModal('login')" class="send-btn-modern"
+                style="width:auto; padding:6px 24px; background:transparent; border:1px solid #555;">Giriş</button>
+            <button onclick="openAuthModal('register')" class="send-btn-modern"
+                style="width:auto; padding:6px 24px;">Kayıt Ol</button>
+        </div>
+    </div>
+
+    <div id="auth-screen" class="modal-overlay">
+        <div class="auth-container">
+            <div style="position: absolute; top: 20px; right: 20px; cursor: pointer; color: #71717a;"
+                onclick="closeAuthModal()">
+                <i class="fa-solid fa-xmark fa-lg"></i>
+            </div>
+            <img src="https://obs.ankara.edu.tr/files/university/images/logo.png" width="80" style="border-radius:10%">
+            <h2 id="auth-title" style="margin-bottom:8px; font-size:24px;">Hoş Geldiniz</h2>
+            <p id="auth-desc" style="color:var(--text-muted); margin-bottom:32px; font-size:14px;">Topluluğa katılmak
+                için giriş yapın.</p><br>
+
+            <div id="login-view">
+                <form id="login-form">
+                    <div class="input-group">
+                        <div class="input-with-icon">
+                            <input type="email" id="email" class="form-input with-icon" placeholder="E-posta adresi"
+                                required>
+                            <i class="fa-solid fa-user input-icon"></i>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="password" class="form-input" placeholder="Parola" required>
+                        <i class="fa-solid fa-eye input-icon clickable password-toggle" id="toggle-password"></i>
+                        <div style="text-align: right; margin-top: 6px;">
+                            <button type="button" id="show-forgot-btn" class="action-btn"
+                                style="color:gray; font-size:12px; background:none; border:none; cursor:pointer;"><br>*Şifremi
+                                unuttum 🐟</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="button" id="login-btn" class="send-btn-modern"
+                            style="flex:1; width:auto; border-radius:8px; padding: 12px;">Giriş Yap</button>
+                        <button type="button" id="register-btn" class="send-btn-modern"
+                            style="flex:1; width:auto; background:transparent; border:1px solid #555; border-radius:8px; padding: 12px;">Kayıt
+                            Ol</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="forgot-view" class="hidden">
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">E-posta adresinizi giriniz:</p>
+                <div class="input-group">
+                    <input type="email" id="forgot-email" class="form-input" placeholder="E-posta adresi">
+                </div>
+                <button type="button" id="send-reset-btn" class="send-btn-modern" style="width:100%; border-radius:8px;"
+                    disabled>Sıfırlama Bağlantısını Gönder!</button>
+                <button type="button" id="back-to-login-btn" class="action-btn"
+                    style="margin-top:10px; color:gray; background:none; border:none; cursor:pointer; width:100%;">⭠
+                    Geri
+                    Dön</button>
+            </div>
+            <p id="login-error" style="color:var(--danger); font-size:13px; margin-top:16px; display:none;"></p>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 20px;">
+            <a href="/forum" class="brand" style="margin-bottom:0;">
+                <img src="https://obs.ankara.edu.tr/files/university/images/logo.png" width="70" style="border-radius:10%">
+                <span>F O R U M</span>
+            </a>
+            <div onclick="openNewTopicModal()"
+                style="cursor:pointer; width:30px; height:30px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; box-shadow:0 0 10px rgba(139,92,246,0.4);">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+        </div>
+
+        <div class="user-profile">
+            <div class="avatar" id="avatar-initial">?</div>
+            <div class="user-info">
+                <h4 id="user-name">Ziyaretçi</h4>
+                <p>● Çevrimiçi</p>
+            </div>
+        </div>
+
+        <div class="nav-label">KANALLAR</div>
+        <div class="nav-item active" onclick="switchCategory('general', this)">
+            <i class="fa-solid fa-earth-americas"></i> Genel Akış
+        </div>
+        <div class="nav-item" onclick="switchCategory('soru-cevap', this)">
+            <i class="fa-solid fa-circle-question"></i> Soru - Cevap
+        </div>
+        <div class="nav-item" onclick="switchCategory('siber-guvenlik', this)">
+            <i class="fa-solid fa-shield-halved"></i> Siber Güvenlik
+        </div>
+        <div class="nav-item" onclick="switchCategory('pentesting', this)">
+            <i class="fa-solid fa-chess-knight"></i> Pentesting
+        </div>
+        <div class="nav-item" onclick="switchCategory('bug-bounty', this)">
+            <i class="fa-solid fa-sack-dollar"></i> Bug Bounty
+        </div>
+        <div class="nav-item" onclick="switchCategory('donanim', this)">
+            <i class="fa-solid fa-laptop-code"></i> Yazılım & Donanım
+        </div>
+        <div class="nav-item" onclick="switchCategory('tool-paylasim', this)">
+            <i class="fa-solid fa-screwdriver-wrench"></i> Tool Paylaşımı
+        </div>
+        <div class="nav-item" onclick="switchCategory('etik-hukuk', this)">
+            <i class="fa-solid fa-scale-balanced"></i> Etik & Hukuk
+        </div>
+        <div class="nav-item" onclick="switchCategory('diger', this)">
+            <i class="fa-solid fa-mug-hot"></i> Diğer Konular
+        </div>
+
+        <div class="sidebar-footer">
+            
+            <div id="admin-panel-btn" class="nav-item" onclick="openUserListModal()"
+                style="display:none; color: #f472b6;">
+                <i class="fa-solid fa-users-gear"></i> Kullanıcı Yönetimi
+            </div>
+            
+            <div id="logout-btn" class="nav-item" style="color:var(--danger);">
+                <i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <div class="channel-info" id="channel-header-info">
+                <i class="fa-solid fa-earth-americas channel-icon"></i>
+                Genel Akış
+            </div>
+        </div>
+
+        <div class="compose-area" id="general-compose-area">
+            <div class="compose-wrapper">
+                <textarea id="main-chat-input" class="compose-input" placeholder="Genel sohbete yaz..." maxlength="500"
+                    oninput="updateCharCount(this, 'main-char-count')"></textarea>
+
+                <div class="compose-footer">
+                    <div class="action-icons">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <div id="main-char-count" class="char-counter">0 / 500</div>
+                        <button id="main-send-btn" class="send-btn-modern">Gönder <i
+                                class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chat-feed">
+        </div>
+    </div>
+
+    <div id="new-topic-modal" class="modal-overlay">
+        <div class="modal-box" style="width: 500px; max-width:90%;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <h2>Yeni Konu Başlat</h2>
+                <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeNewTopicModal()"></i>
+            </div>
+
+            <div class="input-group">
+                <label style="font-size:14px; color:var(--text-muted); display:block; margin-bottom:5px;">Kategori
+                    Seç</label>
+                <select id="topic-category" class="form-input" style="background-color:#09090b;">
+                    <option value="soru-cevap">❓ Soru - Cevap</option>
+                    <option value="siber-guvenlik">🛡️ Siber Güvenlik</option>
+                    <option value="pentesting">⚔️ Pentesting</option>
+                    <option value="bug-bounty">💰 Bug Bounty</option>
+                    <option value="donanim">💻 Yazılım & Donanım</option>
+                    <option value="tool-paylasim">🛠️ Tool Paylaşımı</option>
+                    <option value="etik-hukuk">⚖️ Etik & Hukuk</option>
+                    <option value="diger">☕ Diğer Konular</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="topic-title" class="form-input" placeholder="Konu başlığı giriniz..."
+                    maxlength="50">
+            </div>
+
+            <div class="input-group">
+                <textarea id="topic-content" class="form-input" placeholder="Konu içeriğini detaylıca yaz..."
+                    style="min-height:150px; resize:none;" maxlength="2000"
+                    oninput="updateCharCount(this, 'char-count-display')"></textarea>
+                <div id="char-count-display" class="char-counter">0 / 2000</div>
+            </div>
+
+            <button onclick="submitNewTopic()" class="send-btn-modern"
+                style="width:200px; margin: 20px auto 0 auto; padding:12px; font-size:14px; background:var(--primary);">Konuyu
+                Başlat</button>
+        </div>
+    </div>
+
+    <div id="user-list-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 800px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="margin:0;">Kullanıcı Listesi</h2>
+                <i class="fa-solid fa-xmark fa-lg" style="cursor:pointer;" onclick="closeUserListModal()"></i>
+            </div>
+
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted);">
+                            <th style="padding: 10px;">Kullanıcı</th>
+                            <th style="padding: 10px;">Rütbe</th>
+                            <th style="padding: 10px;">Durum</th>
+                            <th style="padding: 10px; text-align:right;">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
