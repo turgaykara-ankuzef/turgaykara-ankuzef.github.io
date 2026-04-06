@@ -85,7 +85,6 @@ async function handleAuth(endpoint, btnId) {
         return;
     }
 
-    // --- GÜVENLİK KONTROLÜ ---
     if (endpoint === 'register') {
         if (password.length < 8) {
             errEl.innerText = "Şifre en az 8 karakter olmalıdır.";
@@ -452,7 +451,9 @@ function buildPostHTML(post) {
 
     if (post.children && post.children.length > 0) {
         post.children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-        const isOpen = openRepliesSet.has(post.id);
+
+        // Her zaman integer olarak karşılaştır — string/int karışıklığını önler
+        const isOpen = openRepliesSet.has(parseInt(post.id));
         const count = post.children.length;
 
         html += `
@@ -551,13 +552,16 @@ window.toggleReplies = function (id) {
     const btn = document.getElementById(`btn-${id}`);
     const count = btn.getAttribute('data-count');
 
+    // Her zaman integer olarak sakla — karışıklığı önler
+    const intId = parseInt(id);
+
     if (container.classList.contains('show')) {
         container.classList.remove('show');
-        openRepliesSet.delete(id);
+        openRepliesSet.delete(intId);
         btn.innerHTML = `<i class="fa-solid fa-turn-up" style="transform: rotate(90deg);"></i> ${count} yanıtı gör`;
     } else {
         container.classList.add('show');
-        openRepliesSet.add(id);
+        openRepliesSet.add(intId);
         btn.innerHTML = `<i class="fa-solid fa-chevron-up"></i> Yanıtları gizle`;
     }
 }
@@ -726,8 +730,7 @@ window.toggleReplyBox = function (id, authorName) {
         </div>
     `;
     messageEl.insertAdjacentHTML('beforeend', replyHTML);
-    const textarea = document.getElementById(`inline-input-${id}`);
-    textarea.focus();
+    document.getElementById(`inline-input-${id}`).focus();
     checkCooldownState(id);
 }
 
@@ -758,6 +761,7 @@ window.submitInlineReply = async function (parentId) {
 
         if (res.ok) {
             closeReplyBox();
+            // Integer olarak ekle — buildPostHTML'deki has(parseInt()) ile eşleşsin
             openRepliesSet.add(parseInt(parentId));
             lastPostsString = "";
             loadMessages();
@@ -1101,11 +1105,10 @@ window.addEventListener('popstate', function (event) {
 });
 
 document.getElementById('toggle-password').addEventListener('click', function () {
-    const icon = this;
     const passwordInput = document.getElementById('password');
     const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
     passwordInput.setAttribute('type', type);
-    icon.classList.toggle('fa-eye');
-    icon.classList.toggle('fa-eye-slash');
+    this.classList.toggle('fa-eye');
+    this.classList.toggle('fa-eye-slash');
     passwordInput.focus();
 });
