@@ -253,30 +253,34 @@
                 }
 
                 // GÖRÜNÜM 1: GENEL AKIŞ
+                // script.js içindeki loadMessages fonksiyonunun içindeki 'chat' bloğunu bul ve bununla değiştir:
                 if (currentViewMode === 'chat') {
                     const postMap = {};
-                    // Her şeyi Map'e at ve ID'leri sayıya zorla (Garantici yöntem)
+                    // 1. Tüm postları bir haritaya (Map) ekle
                     posts.forEach(p => {
                         postMap[p.id] = { ...p, children: [] };
                     });
-                    
+                
                     const roots = [];
                     posts.forEach(p => {
-                        const parentId = p.parent_id;
-                        // Eğer parent_id varsa ve postMap içinde o parent varsa altına ekle
-                        if (parentId && postMap[parentId]) {
-                            postMap[parentId].children.push(postMap[p.id]);
+                        // parent_id'yi sayıya çevirerek kontrol et (Null değilse)
+                        const pid = p.parent_id ? parseInt(p.parent_id) : null;
+                        
+                        if (pid && postMap[pid]) {
+                            // Eğer bir ebeveyni varsa, onun çocuklarına ekle
+                            postMap[pid].children.push(postMap[p.id]);
                         } else {
-                            // Parent'ı yoksa veya parent'ı bu listede değilse bu bir kök mesajdır
+                            // Ebeveyni yoksa bu bir kök (ana) mesajdır
                             roots.push(postMap[p.id]);
                         }
                     });
-                    
-                    // Kök mesajları en yeni en üstte olacak şekilde sırala
+                
+                    // 2. Kök mesajları en yeni en üstte olacak şekilde sırala
                     roots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                    
+                
+                    // 3. HTML'i oluştur
                     let html = roots.map(root => buildPostHTML(root)).join('');
-                    feed.innerHTML = html || "<div style='text-align:center; padding:50px;'>Henüz mesaj yok.</div>";
+                    feed.innerHTML = html || "<div style='text-align:center; padding:50px; color:gray;'>Henüz mesaj yok.</div>";
                 }
 
                 // GÖRÜNÜM 2: FORUM LİSTESİ
