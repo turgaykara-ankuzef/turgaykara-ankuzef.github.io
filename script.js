@@ -255,17 +255,23 @@
                 // GÖRÜNÜM 1: GENEL AKIŞ
                 if (currentViewMode === 'chat') {
                     const postMap = {};
+                    // Önce her postu bir objeye koy ve children dizisi ekle
                     posts.forEach(p => postMap[p.id] = { ...p, children: [] });
+                    
                     const roots = [];
                     posts.forEach(p => {
+                        // Eğer bir postun parent_id'si varsa ve o parent postMap'te mevcutsa, onun altına ekle
                         if (p.parent_id && postMap[p.parent_id]) {
                             postMap[p.parent_id].children.push(postMap[p.id]);
                         } else if (!p.parent_id) {
+                            // parent_id'si yoksa bu bir ana mesajdır
                             roots.push(postMap[p.id]);
                         }
                     });
+                    
+                    // Sadece kök mesajları bas, buildPostHTML iç içe olanları zaten basacak
                     let html = roots.map(root => buildPostHTML(root)).join('');
-                    feed.innerHTML = html;
+                    feed.innerHTML = html || "<div style='text-align:center; color:#555;'>Henüz mesaj yok.</div>";
                 }
 
                 // GÖRÜNÜM 2: FORUM LİSTESİ
@@ -491,27 +497,31 @@
         }
         function buildPostHTML(post) {
             let html = `<div class="message-wrapper">`;
-            html += renderSingleMessage(post, true);
-
-            if (post.children.length > 0) {
+            html += renderSingleMessage(post, true); // Ana mesajı bas
+        
+            if (post.children && post.children.length > 0) {
+                // Yanıtları tarihe göre sırala (eskiden yeniye)
                 post.children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                
                 const isOpen = openRepliesSet.has(post.id);
-                const icon = isOpen ? '<i class="fa-solid fa-chevron-up"></i>' : '<i class="fa-solid fa-turn-up" style="transform: rotate(90deg);"></i>';
-                const text = isOpen ? 'Yanıtları gizle' : `${post.children.length} yanıtı gör`;
-
+                const count = post.children.length;
+                
                 html += `
-                <div id="btn-${post.id}" class="view-replies-btn" data-count="${post.children.length}" onclick="toggleReplies(${post.id})">
-                    ${icon} ${text}
-                </div>`;
-
-                html += `<div id="replies-${post.id}" class="replies-container ${isOpen ? 'show' : ''}">`;
-                post.children.forEach(child => { html += buildPostHTML(child); });
+                <div id="btn-${post.id}" class="view-replies-btn" data-count="${count}" onclick="toggleReplies(${post.id})">
+                    ${isOpen ? '<i class="fa-solid fa-chevron-up"></i> Yanıtları gizle' : `<i class="fa-solid fa-turn-up" style="transform: rotate(90deg);"></i> ${count} yanıtı gör`}
+                </div>
+                <div id="replies-${post.id}" class="replies-container ${isOpen ? 'show' : ''}">`;
+                
+                // Özyineleme (Recursive) ile alt yanıtları bas
+                post.children.forEach(child => { 
+                    html += buildPostHTML(child); 
+                });
+                
                 html += `</div>`;
             }
             html += `</div>`;
             return html;
         }
-
         // --- MESAJ KUTUSU TASARIMI ---">
         function renderSingleMessage(p, showReplyBtn = true) {
             const initial = (p.author_email || 'A').charAt(0).toUpperCase();
