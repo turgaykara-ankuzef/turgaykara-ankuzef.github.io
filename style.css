@@ -565,8 +565,6 @@
                 position: relative;
             }
         }
-
-        /* --- MODAl--- */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -714,7 +712,6 @@
                 white-space: normal;
             }
         }
-        /* --- EDIT --- */
         .inline-reply-area,
         .inline-edit-area {
             margin-top: 15px;
