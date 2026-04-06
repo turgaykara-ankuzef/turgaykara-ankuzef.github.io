@@ -451,8 +451,6 @@ function buildPostHTML(post) {
 
     if (post.children && post.children.length > 0) {
         post.children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-
-        // Her zaman integer olarak karşılaştır — string/int karışıklığını önler
         const isOpen = openRepliesSet.has(parseInt(post.id));
         const count = post.children.length;
 
@@ -551,8 +549,6 @@ window.toggleReplies = function (id) {
     const container = document.getElementById(`replies-${id}`);
     const btn = document.getElementById(`btn-${id}`);
     const count = btn.getAttribute('data-count');
-
-    // Her zaman integer olarak sakla — karışıklığı önler
     const intId = parseInt(id);
 
     if (container.classList.contains('show')) {
@@ -702,7 +698,6 @@ const unescapeHTML = (str) => str.replace(/&amp;/g, "&").replace(/&lt;/g, "<").r
 
 checkSession().then(() => { handleInitialLoad(); });
 
-// --- SATIR İÇİ YANIT SİSTEMİ ---
 let activeReplyId = null;
 
 window.toggleReplyBox = function (id, authorName) {
@@ -761,7 +756,6 @@ window.submitInlineReply = async function (parentId) {
 
         if (res.ok) {
             closeReplyBox();
-            // Integer olarak ekle — buildPostHTML'deki has(parseInt()) ile eşleşsin
             openRepliesSet.add(parseInt(parentId));
             lastPostsString = "";
             loadMessages();
@@ -828,7 +822,6 @@ window.saveEdit = async function (id) {
     } catch (e) { alert("Hata"); }
 }
 
-// --- COOLDOWN YÖNETİMİ ---
 let globalCooldownEnd = 0;
 function startGlobalReplyCooldown() { globalCooldownEnd = Date.now() + 3000; }
 
