@@ -803,24 +803,32 @@
             const input = document.getElementById(`inline-input-${parentId}`);
             const btn = document.getElementById(`btn-reply-${parentId}`);
             const content = input.value;
-
+        
             if (!content.trim()) return;
-            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
-
+            btn.disabled = true; 
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+        
             try {
                 const res = await fetch(`${API_URL}/posts`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: content, parent_id: parentId, category: currentCategory }),
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        content: content, 
+                        parent_id: parentId, // Kimin altına yazılıyor
+                        category: currentCategory 
+                    }),
                     credentials: 'include'
                 });
+                
                 if (res.ok) {
                     closeReplyBox();
-                    if (parentId) openRepliesSet.add(parseInt(parentId));
-                    lastPostsString = "";
-                    debouncedLoadMessages();
+                    openRepliesSet.add(parseInt(parentId)); // Yanıt verince otomatik açılsın
+                    lastPostsString = ""; // Listeyi yenilemeye zorla
+                    loadMessages();
                     startGlobalReplyCooldown();
                 } else {
-                    alert("Hata oluştu.");
+                    const d = await res.json();
+                    alert(d.error || "Hata oluştu.");
                     btn.disabled = false; btn.innerText = "Yanıtla";
                 }
             } catch (e) {
