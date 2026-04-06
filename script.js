@@ -253,29 +253,26 @@
                 }
 
                 // GÖRÜNÜM 1: GENEL AKIŞ
-                // script.js içindeki loadMessages fonksiyonunun içindeki 'chat' bloğunu bul ve bununla değiştir:
                 if (currentViewMode === 'chat') {
                     const postMap = {};
-                    // 1. Önce tüm postları Map'e ekle
+                    
                     posts.forEach(p => {
                         postMap[p.id] = { ...p, children: [] };
                     });
-                
+
                     const roots = [];
                     posts.forEach(p => {
-                        // parent_id varsa ebeveynine ekle, yoksa ana mesaj (root) yap
                         const pid = p.parent_id ? parseInt(p.parent_id) : null;
                         
                         if (pid && postMap[pid]) {
                             postMap[pid].children.push(postMap[p.id]);
                         } else if (!pid) {
+                            // parent_id yoksa bu bir ana mesajdır
                             roots.push(postMap[p.id]);
                         }
                     });
-                
-                    // Kök mesajları en yeni en üstte olacak şekilde sırala
+
                     roots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                
                     let html = roots.map(root => buildPostHTML(root)).join('');
                     feed.innerHTML = html || "<div style='text-align:center; padding:50px; color:gray;'>Henüz mesaj yok.</div>";
                 }
