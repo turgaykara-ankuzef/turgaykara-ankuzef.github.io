@@ -256,29 +256,26 @@
                 // script.js içindeki loadMessages fonksiyonunun içindeki 'chat' bloğunu bul ve bununla değiştir:
                 if (currentViewMode === 'chat') {
                     const postMap = {};
-                    // 1. Tüm postları bir haritaya (Map) ekle
+                    // 1. Önce tüm postları Map'e ekle
                     posts.forEach(p => {
                         postMap[p.id] = { ...p, children: [] };
                     });
                 
                     const roots = [];
                     posts.forEach(p => {
-                        // parent_id'yi sayıya çevirerek kontrol et (Null değilse)
+                        // parent_id varsa ebeveynine ekle, yoksa ana mesaj (root) yap
                         const pid = p.parent_id ? parseInt(p.parent_id) : null;
                         
                         if (pid && postMap[pid]) {
-                            // Eğer bir ebeveyni varsa, onun çocuklarına ekle
                             postMap[pid].children.push(postMap[p.id]);
-                        } else {
-                            // Ebeveyni yoksa bu bir kök (ana) mesajdır
+                        } else if (!pid) {
                             roots.push(postMap[p.id]);
                         }
                     });
                 
-                    // 2. Kök mesajları en yeni en üstte olacak şekilde sırala
+                    // Kök mesajları en yeni en üstte olacak şekilde sırala
                     roots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 
-                    // 3. HTML'i oluştur
                     let html = roots.map(root => buildPostHTML(root)).join('');
                     feed.innerHTML = html || "<div style='text-align:center; padding:50px; color:gray;'>Henüz mesaj yok.</div>";
                 }
@@ -508,29 +505,33 @@
             let html = `<div class="message-wrapper">`;
             html += renderSingleMessage(post, true); // Ana mesajı bas
         
-            if (post.children && post.children.length > 0) {
-                // Yanıtları tarihe göre sırala (eskiden yeniye)
-                post.children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            function buildPostHTML(post) {
+                    let html = `<div class="message-wrapper">`;
+                    html += renderSingleMessage(post, true); // Ana mesaj
                 
-                const isOpen = openRepliesSet.has(post.id);
-                const count = post.children.length;
-                
-                html += `
-                <div id="btn-${post.id}" class="view-replies-btn" data-count="${count}" onclick="toggleReplies(${post.id})">
-                    ${isOpen ? '<i class="fa-solid fa-chevron-up"></i> Yanıtları gizle' : `<i class="fa-solid fa-turn-up" style="transform: rotate(90deg);"></i> ${count} yanıtı gör`}
-                </div>
-                <div id="replies-${post.id}" class="replies-container ${isOpen ? 'show' : ''}">`;
-                
-                // Özyineleme (Recursive) ile alt yanıtları bas
-                post.children.forEach(child => { 
-                    html += buildPostHTML(child); 
-                });
-                
-                html += `</div>`;
-            }
-            html += `</div>`;
-            return html;
-        }
+                    if (post.children && post.children.length > 0) {
+                        // Yanıtları tarihe göre (eskiden yeniye) sırala
+                        post.children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                        
+                        const isOpen = openRepliesSet.has(post.id);
+                        const count = post.children.length;
+                        
+                        html += `
+                        <div id="btn-${post.id}" class="view-replies-btn" data-count="${count}" onclick="toggleReplies(${post.id})">
+                            ${isOpen ? '<i class="fa-solid fa-chevron-up"></i> Yanıtları gizle' : `<i class="fa-solid fa-turn-up" style="transform: rotate(90deg);"></i> ${count} yanıtı gör`}
+                        </div>
+                        <div id="replies-${post.id}" class="replies-container ${isOpen ? 'show' : ''}">`;
+                        
+                        // Özyineleme: Çocukların içindeki çocukları da bas
+                        post.children.forEach(child => { 
+                            html += buildPostHTML(child); 
+                        });
+                        
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                    return html;
+                }
         // --- MESAJ KUTUSU TASARIMI ---">
         function renderSingleMessage(p, showReplyBtn = true) {
             const initial = (p.author_email || 'A').charAt(0).toUpperCase();
