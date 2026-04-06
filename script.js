@@ -255,23 +255,28 @@
                 // GÖRÜNÜM 1: GENEL AKIŞ
                 if (currentViewMode === 'chat') {
                     const postMap = {};
-                    // Önce her postu bir objeye koy ve children dizisi ekle
-                    posts.forEach(p => postMap[p.id] = { ...p, children: [] });
+                    // Her şeyi Map'e at ve ID'leri sayıya zorla (Garantici yöntem)
+                    posts.forEach(p => {
+                        postMap[p.id] = { ...p, children: [] };
+                    });
                     
                     const roots = [];
                     posts.forEach(p => {
-                        // Eğer bir postun parent_id'si varsa ve o parent postMap'te mevcutsa, onun altına ekle
-                        if (p.parent_id && postMap[p.parent_id]) {
-                            postMap[p.parent_id].children.push(postMap[p.id]);
-                        } else if (!p.parent_id) {
-                            // parent_id'si yoksa bu bir ana mesajdır
+                        const parentId = p.parent_id;
+                        // Eğer parent_id varsa ve postMap içinde o parent varsa altına ekle
+                        if (parentId && postMap[parentId]) {
+                            postMap[parentId].children.push(postMap[p.id]);
+                        } else {
+                            // Parent'ı yoksa veya parent'ı bu listede değilse bu bir kök mesajdır
                             roots.push(postMap[p.id]);
                         }
                     });
                     
-                    // Sadece kök mesajları bas, buildPostHTML iç içe olanları zaten basacak
+                    // Kök mesajları en yeni en üstte olacak şekilde sırala
+                    roots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    
                     let html = roots.map(root => buildPostHTML(root)).join('');
-                    feed.innerHTML = html || "<div style='text-align:center; color:#555;'>Henüz mesaj yok.</div>";
+                    feed.innerHTML = html || "<div style='text-align:center; padding:50px;'>Henüz mesaj yok.</div>";
                 }
 
                 // GÖRÜNÜM 2: FORUM LİSTESİ
